@@ -25,7 +25,7 @@ jobs:
         run: npm install -g @salesforce/cli
 
       - name: Install sfdx-git-delta plugin
-        run: sf plugins install sfdx-git-delta
+        run: echo 'y' | sf plugins install sfdx-git-delta
 
       - name: Create JWT key file
         run: echo "${{ secrets.SF_JWT_KEY }}" > jwt-key.txt
