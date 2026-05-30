@@ -1,0 +1,69 @@
+<template>
+    <lightning-card title="Create New Account" icon-name="standard:account">
+        <div class="slds-p-around_medium">
+
+            <template if:true={isSuccess}>
+                <div class="slds-notify slds-notify_toast slds-theme_success slds-p-around_small slds-m-bottom_medium">
+                    <span>Account created successfully! ID: {accountId}</span>
+                </div>
+            </template>
+
+            <template if:true={errorMessage}>
+                <div class="slds-notify slds-notify_toast slds-theme_error slds-p-around_small slds-m-bottom_medium">
+                    <span>{errorMessage}</span>
+                </div>
+            </template>
+
+            <lightning-input
+                label="Account Name"
+                value={accountName}
+                onchange={handleNameChange}
+                required>
+            </lightning-input>
+
+            <lightning-input
+                label="Phone"
+                value={phone}
+                onchange={handlePhoneChange}
+                type="tel"
+                class="slds-m-top_small">
+            </lightning-input>
+
+            <lightning-input
+                label="Website"
+                value={website}
+                onchange={handleWebsiteChange}
+                type="url"
+                class="slds-m-top_small">
+            </lightning-input>
+
+            <lightning-combobox
+                label="Industry"
+                value={industry}
+                options={industryOptions}
+                onchange={handleIndustryChange}
+                class="slds-m-top_small">
+            </lightning-combobox>
+
+            <div class="slds-m-top_medium">
+                <lightning-button
+                    label="Create Account"
+                    variant="brand"
+                    onclick={handleCreate}
+                    disabled={isLoading}>
+                </lightning-button>
+                <lightning-button
+                    label="Reset"
+                    variant="neutral"
+                    onclick={handleReset}
+                    class="slds-m-left_small">
+                </lightning-button>
+            </div>
+
+            <template if:true={isLoading}>
+                <lightning-spinner alternative-text="Creating..." size="small" class="slds-m-top_small"></lightning-spinner>
+            </template>
+
+        </div>
+    </lightning-card>
+</template>
