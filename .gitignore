@@ -8,6 +8,14 @@
 .localdevserver/
 deploy-options.json
 
+# Salesforce CLI files
+manifest/
+certs/
+.forceignore
+
+# Scripts & logs
+scripts/*
+
 # LWC VSCode autocomplete
 **/lwc/jsconfig.json
 
