@@ -4,7 +4,10 @@
       "Bash(sf project *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(gh api *)",
+      "Bash(gh secret *)",
+      "Bash(gh pr *)"
     ]
   }
 }
