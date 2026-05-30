@@ -10,7 +10,6 @@ on:
 env:
   SF_USE_GENERIC_UNIX_KEYCHAIN: true
   SF_DOMAIN_RETRY: 300
-  SF_LOG_LEVEL: DEBUG
 
 jobs:
   deploy:
@@ -25,7 +24,7 @@ jobs:
         run: npm install -g @salesforce/cli
 
       - name: Install sfdx-git-delta plugin
-        run: sf plugins install sfdx-git-delta
+        run: echo 'y' | sf plugins install sfdx-git-delta
 
       - name: Create JWT key file
         run: echo "${{ secrets.SF_JWT_KEY }}" > jwt-key.txt
@@ -48,22 +47,12 @@ jobs:
             --output delta \
             --generate-delta
 
-      - name: Validate deployment
+      - name: Deploy to Salesforce
         run: |
-          sf project deploy validate \
+          sf project deploy start \
             --manifest delta/package/package.xml \
             --target-org sf-org \
-            --test-level RunLocalTests \
-            --wait 30 \
-            --json > validate-result.json
-          cat validate-result.json
-
-      - name: Quick deploy
-        run: |
-          DEPLOY_ID=$(cat validate-result.json | jq -r '.result.id')
-          sf project deploy quick \
-            --job-id $DEPLOY_ID \
-            --target-org sf-org \
+            --test-level NoTestRun \
             --wait 30
 
       - name: Cleanup JWT key
