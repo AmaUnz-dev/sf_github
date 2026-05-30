@@ -1,0 +1,39 @@
+name: PMD Code Analysis
+
+on:
+  pull_request:
+    branches:
+      - OrgSource
+    paths:
+      - 'force-app/**'
+
+jobs:
+  pmd-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Download PMD
+        run: |
+          PMD_VERSION=6.55.0
+          wget -q https://github.com/pmd/pmd/releases/download/pmd_releases%2F${PMD_VERSION}/pmd-bin-${PMD_VERSION}.zip
+          unzip -q pmd-bin-${PMD_VERSION}.zip
+          echo "PMD_HOME=$(pwd)/pmd-bin-${PMD_VERSION}" >> $GITHUB_ENV
+
+      - name: Run PMD Analysis
+        run: |
+          $PMD_HOME/bin/run.sh pmd \
+            -d force-app/main/default \
+            -R config/ruleset.xml \
+            -f text \
+            -l apex \
+            --fail-on-violation true

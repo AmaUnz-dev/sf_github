@@ -1,0 +1,71 @@
+name: Salesforce Deployment
+
+on:
+  push:
+    branches:
+      - OrgSource
+    paths:
+      - 'force-app/**'
+
+env:
+  SF_USE_GENERIC_UNIX_KEYCHAIN: true
+  SF_DOMAIN_RETRY: 300
+  SF_LOG_LEVEL: DEBUG
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli
+
+      - name: Install sfdx-git-delta plugin
+        run: sf plugins install sfdx-git-delta
+
+      - name: Create JWT key file
+        run: echo "${{ secrets.SF_JWT_KEY }}" > jwt-key.txt
+
+      - name: Authenticate to Salesforce
+        run: |
+          sf org login jwt \
+            --client-id ${{ secrets.SF_CLIENT_ID }} \
+            --jwt-key-file jwt-key.txt \
+            --username ${{ secrets.SF_USERNAME }} \
+            --instance-url ${{ secrets.SF_INSTANCE_URL }} \
+            --alias sf-org
+
+      - name: Generate delta package
+        run: |
+          mkdir -p delta
+          sf sgd source delta \
+            --to HEAD \
+            --from HEAD~1 \
+            --output delta \
+            --generate-delta
+
+      - name: Validate deployment
+        run: |
+          sf project deploy validate \
+            --manifest delta/package/package.xml \
+            --target-org sf-org \
+            --test-level RunLocalTests \
+            --wait 30 \
+            --json > validate-result.json
+          cat validate-result.json
+
+      - name: Quick deploy
+        run: |
+          DEPLOY_ID=$(cat validate-result.json | jq -r '.result.id')
+          sf project deploy quick \
+            --job-id $DEPLOY_ID \
+            --target-org sf-org \
+            --wait 30
+
+      - name: Cleanup JWT key
+        if: always()
+        run: rm -f jwt-key.txt
