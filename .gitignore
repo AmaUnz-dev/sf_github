@@ -15,6 +15,7 @@ certs/
 
 # Scripts & logs
 scripts/*
+!scripts/sync-sf-secret.sh
 
 # LWC VSCode autocomplete
 **/lwc/jsconfig.json
