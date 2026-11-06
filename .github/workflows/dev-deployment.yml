@@ -1,7 +1,9 @@
 name: Salesforce Deployment
 
 on:
-  push:
+  pull_request:
+    types:
+      - closed
     branches:
       - OrgSource
     paths:
@@ -13,6 +15,7 @@ env:
 
 jobs:
   deploy:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -26,17 +29,11 @@ jobs:
       - name: Install sfdx-git-delta plugin
         run: echo 'y' | sf plugins install sfdx-git-delta
 
-      - name: Create JWT key file
-        run: echo "${{ secrets.SF_JWT_KEY }}" > jwt-key.txt
-
       - name: Authenticate to Salesforce
         run: |
-          sf org login jwt \
-            --client-id ${{ secrets.SF_CLIENT_ID }} \
-            --jwt-key-file jwt-key.txt \
-            --username ${{ secrets.SF_USERNAME }} \
-            --instance-url ${{ secrets.SF_INSTANCE_URL }} \
-            --alias sf-org
+          echo "${{ secrets.SFDX_AUTH_URL }}" > sfdx-url.txt
+          sf org login sfdx-url --sfdx-url-file sfdx-url.txt --alias sf-org --set-default
+          rm -f sfdx-url.txt
 
       - name: Generate delta package
         run: |
@@ -54,7 +51,3 @@ jobs:
             --target-org sf-org \
             --test-level NoTestRun \
             --wait 30
-
-      - name: Cleanup JWT key
-        if: always()
-        run: rm -f jwt-key.txt
